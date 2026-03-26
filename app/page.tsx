@@ -756,7 +756,7 @@ export default function Home() {
           <div className="grid gap-10 lg:grid-cols-[1.05fr_.95fr]">
             <div>
               <h2 className="text-[32px] font-semibold tracking-tight text-neutral-900 sm:text-[36px]">
-                Why Thentics exists
+                Why is Thentics different?
               </h2>
 
               <p className="mt-4 text-[16px] leading-8 text-neutral-700">
