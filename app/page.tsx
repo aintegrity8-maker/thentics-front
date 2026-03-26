@@ -268,7 +268,7 @@ function ContactFormCard() {
   const [email, setEmail] = useState("")
   const [organization, setOrganization] = useState("")
   const [message, setMessage] = useState("")
-  const [website, setWebsite] = useState("") // honeypot
+  const [website, setWebsite] = useState("")
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
   const [feedback, setFeedback] = useState("")
@@ -317,6 +317,7 @@ function ContactFormCard() {
       setOrganization("")
       setMessage("")
       setWebsite("")
+
       if (typeof window !== "undefined") {
         delete (window as any).__thenticsFormStartedAt
       }
@@ -381,7 +382,10 @@ function ContactFormCard() {
         </div>
 
         <div>
-          <label htmlFor="organization" className="mb-2 block text-sm font-medium text-neutral-800">
+          <label
+            htmlFor="organization"
+            className="mb-2 block text-sm font-medium text-neutral-800"
+          >
             Institution / Organization
           </label>
           <input
@@ -580,10 +584,20 @@ export default function Home() {
         <section id="product" className="scroll-mt-24 mt-20">
           <div className="mb-5">
             <h2 className="text-[32px] font-semibold tracking-tight text-neutral-900 sm:text-[36px]">
-              Thentics products
+              Why Thentics is different
             </h2>
-            <p className="mt-2 max-w-4xl text-[16px] leading-8 text-neutral-700">
-              Professional tools to assess authorship, design activities, and audit with transparency.
+
+            <p className="mt-2 text-[14px] font-medium uppercase tracking-[0.14em] text-neutral-500">
+              In one word: noble.
+            </p>
+
+            <p className="mt-4 max-w-5xl text-[16px] leading-8 text-neutral-700">
+              Thentics is built to serve academic institutions first, and indirectly the students
+              who choose to preserve the integrity of their own words. Its purpose is not to help
+              generated content appear human, but to protect and recognize authentic authorship.
+              That is why Thentics will never offer humanizers or tools designed to bypass
+              detection. The goal is simple: to become the most reliable AI detection system on
+              the market.
             </p>
           </div>
 
@@ -738,6 +752,56 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="why" className="scroll-mt-24 mt-20 border-t border-neutral-300 pt-14">
+          <div className="grid gap-10 lg:grid-cols-[1.05fr_.95fr]">
+            <div>
+              <h2 className="text-[32px] font-semibold tracking-tight text-neutral-900 sm:text-[36px]">
+                Why Thentics exists
+              </h2>
+
+              <p className="mt-4 text-[16px] leading-8 text-neutral-700">
+                As AI tools rapidly advanced, something important started to disappear: the
+                ability to clearly recognize authentic human work.
+              </p>
+
+              <p className="mt-4 text-[16px] leading-8 text-neutral-700">
+                In academic environments, students gained access to powerful generation tools,
+                while educators were left without reliable ways to distinguish genuine thinking
+                from AI-assisted content.
+              </p>
+
+              <p className="mt-4 text-[16px] leading-8 text-neutral-700">
+                Thentics was built to restore that balance — not by restricting AI, but by
+                making authenticity visible again.
+              </p>
+            </div>
+
+            <div className="rounded-[28px] border border-neutral-300 bg-[#f1f1ee] p-7">
+              <h3 className="text-lg font-semibold text-neutral-900">Our principles</h3>
+
+              <p className="mt-4 text-[14px] leading-7 text-neutral-700">
+                Thentics is designed to support academic institutions first — and indirectly,
+                the students who choose to produce authentic work.
+              </p>
+
+              <p className="mt-4 text-[14px] leading-7 text-neutral-700">
+                The goal is to ensure that those who maintain integrity in their writing are
+                properly recognized and not overshadowed by generated content.
+              </p>
+
+              <p className="mt-4 text-[14px] leading-7 text-neutral-700">
+                Thentics will never offer tools to bypass detection or “humanize” AI content.
+                The system is built with a single objective: to be the most reliable AI detection
+                solution on the market.
+              </p>
+
+              <p className="mt-4 text-[14px] leading-7 text-neutral-700">
+                Reliability, transparency, and trust are the core of the product.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section id="security" className="scroll-mt-24 mt-20 border-t border-neutral-300 pt-14">
           <div className="mb-8">
             <h2 className="text-[32px] font-semibold tracking-tight text-neutral-900 sm:text-[36px]">
@@ -761,7 +825,8 @@ export default function Home() {
             <div className="rounded-[28px] border border-neutral-300 bg-[#f1f1ee] p-7">
               <h3 className="text-base font-semibold text-neutral-900">Privacy</h3>
               <p className="mt-3 text-[14px] leading-7 text-neutral-700">
-                Prepared for institution-level adaptation under different data policies and deployment models.
+                Prepared for institution-level adaptation under different data policies and deployment
+                models.
               </p>
             </div>
           </div>
@@ -771,10 +836,7 @@ export default function Home() {
           <PlansSection />
         </div>
 
-        <section
-          id="contact"
-          className="scroll-mt-24 mt-20 border-t border-neutral-300 pt-14"
-        >
+        <section id="contact" className="scroll-mt-24 mt-20 border-t border-neutral-300 pt-14">
           <div className="mb-8 max-w-3xl">
             <h2 className="text-[32px] font-semibold tracking-tight text-neutral-900 sm:text-[36px]">
               Contact
