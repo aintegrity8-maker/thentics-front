@@ -273,6 +273,12 @@ function ContactFormCard() {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
   const [feedback, setFeedback] = useState("")
 
+  function markFormStart() {
+    if (typeof window !== "undefined" && !(window as any).__thenticsFormStartedAt) {
+      ;(window as any).__thenticsFormStartedAt = Date.now()
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
@@ -311,16 +317,15 @@ function ContactFormCard() {
       setOrganization("")
       setMessage("")
       setWebsite("")
+      if (typeof window !== "undefined") {
+        delete (window as any).__thenticsFormStartedAt
+      }
     } catch (err: any) {
       setStatus("error")
       setFeedback(err?.message || "Something went wrong.")
     } finally {
       setLoading(false)
     }
-  }
-
-  if (typeof window !== "undefined" && !(window as any).__thenticsFormStartedAt) {
-    ;(window as any).__thenticsFormStartedAt = Date.now()
   }
 
   return (
@@ -333,8 +338,8 @@ function ContactFormCard() {
           Request demo / early access
         </h3>
         <p className="mt-3 max-w-2xl text-[15px] leading-8 text-neutral-700">
-          Send your details and Thentics will get back to you. Your contact email is handled
-          server-side and is not exposed in the page source.
+          Send your details and the Thentics team will contact you shortly. Messages are handled
+          securely on the server side.
         </p>
       </div>
 
@@ -348,6 +353,7 @@ function ContactFormCard() {
               id="name"
               type="text"
               value={name}
+              onFocus={markFormStart}
               onChange={(e) => setName(e.target.value)}
               required
               maxLength={120}
@@ -364,6 +370,7 @@ function ContactFormCard() {
               id="email"
               type="email"
               value={email}
+              onFocus={markFormStart}
               onChange={(e) => setEmail(e.target.value)}
               required
               maxLength={160}
@@ -381,6 +388,7 @@ function ContactFormCard() {
             id="organization"
             type="text"
             value={organization}
+            onFocus={markFormStart}
             onChange={(e) => setOrganization(e.target.value)}
             maxLength={160}
             className="w-full rounded-2xl border border-neutral-300 bg-[#fafaf8] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-500"
@@ -395,6 +403,7 @@ function ContactFormCard() {
           <textarea
             id="message"
             value={message}
+            onFocus={markFormStart}
             onChange={(e) => setMessage(e.target.value)}
             required
             rows={6}
@@ -404,7 +413,6 @@ function ContactFormCard() {
           />
         </div>
 
-        {/* Honeypot: bots suelen llenarlo, humanos no */}
         <div className="hidden" aria-hidden="true">
           <label htmlFor="website">Website</label>
           <input
@@ -426,9 +434,7 @@ function ContactFormCard() {
             {loading ? "Sending..." : "Send request"}
           </button>
 
-          <span className="text-sm text-neutral-500">
-            Anti-spam protections enabled.
-          </span>
+          <span className="text-sm text-neutral-500">Anti-spam protections enabled.</span>
         </div>
 
         {feedback ? (
