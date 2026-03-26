@@ -1,17 +1,9 @@
 "use client"
 
 import Image from "next/image"
+import { useState } from "react"
 
 type AdoptionPoint = { year: number; ai: number; human: number }
-
-function openContactEmail() {
-  const user = "aintegrity8"
-  const domain = "gmail.com"
-  const subject = encodeURIComponent("Thentics inquiry")
-  const body = encodeURIComponent("Hi,\n\nI’m reaching out regarding Thentics.\n")
-
-  window.location.href = `mailto:${user}@${domain}?subject=${subject}&body=${body}`
-}
 
 function LineAdoptionChart() {
   const data: AdoptionPoint[] = [
@@ -152,12 +144,12 @@ function NavBar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={openContactEmail}
+          <a
+            href="#contact-form"
             className="rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800"
           >
             Try free
-          </button>
+          </a>
           <button className="rounded-2xl border border-neutral-300 bg-[#f6f6f3] px-4 py-2 text-sm text-neutral-700">
             EN
           </button>
@@ -205,9 +197,7 @@ function ProductCard({
         {title}
       </h3>
 
-      <p className="mt-3 text-[14px] leading-7 text-neutral-700">
-        {description}
-      </p>
+      <p className="mt-3 text-[14px] leading-7 text-neutral-700">{description}</p>
 
       <div className="mt-8 flex items-center justify-between text-sm text-neutral-500">
         <span>Open product</span>
@@ -273,6 +263,190 @@ function PlansSection() {
   )
 }
 
+function ContactFormCard() {
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [organization, setOrganization] = useState("")
+  const [message, setMessage] = useState("")
+  const [website, setWebsite] = useState("") // honeypot
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
+  const [feedback, setFeedback] = useState("")
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+
+    if (loading) return
+
+    setLoading(true)
+    setStatus("idle")
+    setFeedback("")
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          organization,
+          message,
+          website,
+          formStartedAt: (window as any).__thenticsFormStartedAt || Date.now(),
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Could not send message.")
+      }
+
+      setStatus("success")
+      setFeedback("Your message was sent successfully.")
+      setName("")
+      setEmail("")
+      setOrganization("")
+      setMessage("")
+      setWebsite("")
+    } catch (err: any) {
+      setStatus("error")
+      setFeedback(err?.message || "Something went wrong.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (typeof window !== "undefined" && !(window as any).__thenticsFormStartedAt) {
+    ;(window as any).__thenticsFormStartedAt = Date.now()
+  }
+
+  return (
+    <div
+      id="contact-form"
+      className="rounded-[30px] border border-neutral-300 bg-[#f1f1ee] p-6 shadow-sm sm:p-8"
+    >
+      <div className="mb-6">
+        <h3 className="text-[24px] font-semibold tracking-tight text-neutral-900">
+          Request demo / early access
+        </h3>
+        <p className="mt-3 max-w-2xl text-[15px] leading-8 text-neutral-700">
+          Send your details and Thentics will get back to you. Your contact email is handled
+          server-side and is not exposed in the page source.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="grid gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="name" className="mb-2 block text-sm font-medium text-neutral-800">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              maxLength={120}
+              className="w-full rounded-2xl border border-neutral-300 bg-[#fafaf8] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-500"
+              placeholder="Your name"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-neutral-800">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              maxLength={160}
+              className="w-full rounded-2xl border border-neutral-300 bg-[#fafaf8] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-500"
+              placeholder="name@university.edu"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="organization" className="mb-2 block text-sm font-medium text-neutral-800">
+            Institution / Organization
+          </label>
+          <input
+            id="organization"
+            type="text"
+            value={organization}
+            onChange={(e) => setOrganization(e.target.value)}
+            maxLength={160}
+            className="w-full rounded-2xl border border-neutral-300 bg-[#fafaf8] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-500"
+            placeholder="University, school, department, company"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="message" className="mb-2 block text-sm font-medium text-neutral-800">
+            Message
+          </label>
+          <textarea
+            id="message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            required
+            rows={6}
+            maxLength={3000}
+            className="w-full rounded-2xl border border-neutral-300 bg-[#fafaf8] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-500"
+            placeholder="Tell us what you are looking for: demo, institution deployment, early access, partnership..."
+          />
+        </div>
+
+        {/* Honeypot: bots suelen llenarlo, humanos no */}
+        <div className="hidden" aria-hidden="true">
+          <label htmlFor="website">Website</label>
+          <input
+            id="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </div>
+
+        <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+          <button
+            type="submit"
+            disabled={loading}
+            className="inline-flex h-12 items-center justify-center rounded-full bg-black px-7 text-base font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {loading ? "Sending..." : "Send request"}
+          </button>
+
+          <span className="text-sm text-neutral-500">
+            Anti-spam protections enabled.
+          </span>
+        </div>
+
+        {feedback ? (
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              status === "success"
+                ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                : "border-red-300 bg-red-50 text-red-800"
+            }`}
+          >
+            {feedback}
+          </div>
+        ) : null}
+      </form>
+    </div>
+  )
+}
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#e9e9e6] text-neutral-900">
@@ -301,9 +475,8 @@ export default function Home() {
             </h1>
 
             <p className="mt-7 max-w-2xl text-[15px] leading-8 text-neutral-700">
-              Thentics combines advanced stylometrics with AI detection to assess
-              authorship, estimate editing intensity, and distinguish human writing
-              from LLM-generated content.
+              Thentics combines advanced stylometrics with AI detection to assess authorship,
+              estimate editing intensity, and distinguish human writing from LLM-generated content.
             </p>
 
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -361,8 +534,8 @@ export default function Home() {
               </h3>
 
               <p className="mt-3 text-[13px] leading-7 text-neutral-700">
-                Instead of relying on a single opaque score, Thentics evaluates
-                text through multiple layers of evidence.
+                Instead of relying on a single opaque score, Thentics evaluates text through
+                multiple layers of evidence.
               </p>
 
               <div className="mt-6 grid gap-3">
@@ -594,9 +767,9 @@ export default function Home() {
 
         <section
           id="contact"
-          className="scroll-mt-24 mt-20 border-t border-neutral-300 pt-14 sm:flex sm:items-end sm:justify-between"
+          className="scroll-mt-24 mt-20 border-t border-neutral-300 pt-14"
         >
-          <div className="max-w-3xl">
+          <div className="mb-8 max-w-3xl">
             <h2 className="text-[32px] font-semibold tracking-tight text-neutral-900 sm:text-[36px]">
               Contact
             </h2>
@@ -605,14 +778,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-6 sm:mt-0">
-            <button
-              onClick={openContactEmail}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-black px-7 text-base font-semibold text-white transition hover:bg-neutral-800"
-            >
-              Request demo / early access
-            </button>
-          </div>
+          <ContactFormCard />
         </section>
       </main>
     </div>
