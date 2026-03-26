@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
 
+export const runtime = "nodejs"
+
 const RATE_LIMIT_WINDOW_MS = 60_000
 const MAX_REQUESTS_PER_IP = 5
 
@@ -13,9 +15,7 @@ const ipStore = new Map<string, Entry>()
 
 function getClientIp(req: NextRequest) {
   const forwardedFor = req.headers.get("x-forwarded-for")
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0].trim()
-  }
+  if (forwardedFor) return forwardedFor.split(",")[0].trim()
 
   const realIp = req.headers.get("x-real-ip")
   if (realIp) return realIp.trim()
@@ -55,6 +55,19 @@ function clean(value: unknown, max = 5000) {
     .slice(0, max)
 }
 
+function escapeHtml(str: string) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+}
+
+export async function GET() {
+  return NextResponse.json({ ok: true, route: "contact alive" })
+}
+
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req)
@@ -73,7 +86,7 @@ export async function POST(req: NextRequest) {
     const email = clean(body.email, 160)
     const organization = clean(body.organization, 160)
     const message = clean(body.message, 3000)
-    const website = clean(body.website, 200) // honeypot
+    const website = clean(body.website, 200)
     const formStartedAt = Number(body.formStartedAt || 0)
 
     if (website) {
@@ -106,8 +119,13 @@ export async function POST(req: NextRequest) {
     const smtpPass = process.env.CONTACT_SMTP_PASS
     const contactTo = process.env.CONTACT_TO_EMAIL
 
+    console.log("ENV CHECK", {
+      hasUser: !!smtpUser,
+      hasPass: !!smtpPass,
+      hasTo: !!contactTo,
+    })
+
     if (!smtpUser || !smtpPass || !contactTo) {
-      console.error("Missing contact email environment variables.")
       return NextResponse.json(
         { error: "Server email is not configured." },
         { status: 500 }
@@ -121,6 +139,8 @@ export async function POST(req: NextRequest) {
         pass: smtpPass,
       },
     })
+
+    await transporter.verify()
 
     const safeOrganization = organization || "Not provided"
 
@@ -163,19 +183,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error("Contact route error:", error)
+    console.error("CONTACT ROUTE ERROR:", error)
     return NextResponse.json(
       { error: "Unable to send message right now." },
       { status: 500 }
     )
   }
-}
-
-function escapeHtml(str: string) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
 }
