@@ -7,11 +7,11 @@ type AdoptionPoint = { year: number; ai: number; human: number }
 
 function LineAdoptionChart() {
   const data: AdoptionPoint[] = [
-    { year: 2022, ai: 0, human: 100 },
-    { year: 2023, ai: 20, human: 80 },
-    { year: 2024, ai: 30, human: 70 },
-    { year: 2025, ai: 50, human: 50 },
-  ]
+  { year: 2022, ai: 10, human: 90 },
+  { year: 2023, ai: 50, human: 50 },
+  { year: 2024, ai: 60, human: 40 },
+  { year: 2025, ai: 85, human: 15 },
+]
 
   const W = 880
   const H = 320
@@ -695,8 +695,8 @@ export default function Home() {
               Adoption trend
             </h2>
             <p className="mt-2 max-w-5xl text-[16px] leading-8 text-neutral-700">
-              Since 2022, adoption has grown rapidly. The 2023 inflection shows 20% AI use; by 2025
-              it reaches a 50/50 split between AI use and human-only writing.
+              Since 2022, adoption has grown rapidly. By 2023, AI-assisted writing had already reached
+              50% of academic submissions, climbing to 60% in 2024 and 85% by 2025.
             </p>
           </div>
           <LineAdoptionChart />
