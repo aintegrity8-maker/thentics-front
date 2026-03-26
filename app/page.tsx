@@ -4,6 +4,15 @@ import Image from "next/image"
 
 type AdoptionPoint = { year: number; ai: number; human: number }
 
+function openContactEmail() {
+  const user = "aintegrity8"
+  const domain = "gmail.com"
+  const subject = encodeURIComponent("Thentics inquiry")
+  const body = encodeURIComponent("Hi,\n\nI’m reaching out regarding Thentics.\n")
+
+  window.location.href = `mailto:${user}@${domain}?subject=${subject}&body=${body}`
+}
+
 function LineAdoptionChart() {
   const data: AdoptionPoint[] = [
     { year: 2022, ai: 0, human: 100 },
@@ -143,12 +152,12 @@ function NavBar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <a
-            href="#contact"
+          <button
+            onClick={openContactEmail}
             className="rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800"
           >
             Try free
-          </a>
+          </button>
           <button className="rounded-2xl border border-neutral-300 bg-[#f6f6f3] px-4 py-2 text-sm text-neutral-700">
             EN
           </button>
@@ -597,12 +606,12 @@ export default function Home() {
           </div>
 
           <div className="mt-6 sm:mt-0">
-            <a
-              href="mailto:TU_EMAIL"
+            <button
+              onClick={openContactEmail}
               className="inline-flex h-12 items-center justify-center rounded-full bg-black px-7 text-base font-semibold text-white transition hover:bg-neutral-800"
             >
               Request demo / early access
-            </a>
+            </button>
           </div>
         </section>
       </main>
