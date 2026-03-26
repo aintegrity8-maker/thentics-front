@@ -1,47 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
 
-export const runtime = "nodejs"
 
-const RATE_LIMIT_WINDOW_MS = 60_000
-const MAX_REQUESTS_PER_IP = 5
-
-type Entry = {
-  count: number
-  resetAt: number
-}
-
-const ipStore = new Map<string, Entry>()
-
-function getClientIp(req: NextRequest) {
-  const forwardedFor = req.headers.get("x-forwarded-for")
-  if (forwardedFor) return forwardedFor.split(",")[0].trim()
-
-  const realIp = req.headers.get("x-real-ip")
-  if (realIp) return realIp.trim()
-
-  return "unknown"
-}
-
-function checkRateLimit(ip: string) {
-  const now = Date.now()
-  const existing = ipStore.get(ip)
-
-  if (!existing || now > existing.resetAt) {
-    ipStore.set(ip, {
-      count: 1,
-      resetAt: now + RATE_LIMIT_WINDOW_MS,
-    })
-    return { allowed: true }
-  }
-
-  if (existing.count >= MAX_REQUESTS_PER_IP) {
-    return { allowed: false }
-  }
-
-  existing.count += 1
-  ipStore.set(ip, existing)
-  return { allowed: true }
+export async function GET() {
+  return NextResponse.json({ ok: true, route: "contact alive" })
 }
 
 function isValidEmail(email: string) {
@@ -64,22 +26,8 @@ function escapeHtml(str: string) {
     .replace(/'/g, "&#039;")
 }
 
-export async function GET() {
-  return NextResponse.json({ ok: true, route: "contact alive" })
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const ip = getClientIp(req)
-    const rate = checkRateLimit(ip)
-
-    if (!rate.allowed) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again in a minute." },
-        { status: 429 }
-      )
-    }
-
     const body = await req.json()
 
     const name = clean(body.name, 120)
@@ -119,12 +67,6 @@ export async function POST(req: NextRequest) {
     const smtpPass = process.env.CONTACT_SMTP_PASS
     const contactTo = process.env.CONTACT_TO_EMAIL
 
-    console.log("ENV CHECK", {
-      hasUser: !!smtpUser,
-      hasPass: !!smtpPass,
-      hasTo: !!contactTo,
-    })
-
     if (!smtpUser || !smtpPass || !contactTo) {
       return NextResponse.json(
         { error: "Server email is not configured." },
@@ -140,45 +82,35 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    await transporter.verify()
-
     const safeOrganization = organization || "Not provided"
-
-    const subject = `New Thentics contact request from ${name}`
-
-    const text = [
-      "New Thentics contact request",
-      "",
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Organization: ${safeOrganization}`,
-      `IP: ${ip}`,
-      "",
-      "Message:",
-      message,
-    ].join("\n")
-
-    const html = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-        <h2>New Thentics contact request</h2>
-        <p><strong>Name:</strong> ${escapeHtml(name)}</p>
-        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-        <p><strong>Organization:</strong> ${escapeHtml(safeOrganization)}</p>
-        <p><strong>IP:</strong> ${escapeHtml(ip)}</p>
-        <p><strong>Message:</strong></p>
-        <div style="white-space: pre-wrap; border: 1px solid #ddd; padding: 12px; border-radius: 8px;">
-          ${escapeHtml(message)}
-        </div>
-      </div>
-    `
 
     await transporter.sendMail({
       from: `"Thentics Website" <${smtpUser}>`,
       to: contactTo,
       replyTo: email,
-      subject,
-      text,
-      html,
+      subject: `New Thentics contact request from ${name}`,
+      text: [
+        "New Thentics contact request",
+        "",
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Organization: ${safeOrganization}`,
+        "",
+        "Message:",
+        message,
+      ].join("\n"),
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+          <h2>New Thentics contact request</h2>
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Organization:</strong> ${escapeHtml(safeOrganization)}</p>
+          <p><strong>Message:</strong></p>
+          <div style="white-space: pre-wrap; border: 1px solid #ddd; padding: 12px; border-radius: 8px;">
+            ${escapeHtml(message)}
+          </div>
+        </div>
+      `,
     })
 
     return NextResponse.json({ ok: true })
